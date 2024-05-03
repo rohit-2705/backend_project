@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const UserModel = require("../Models/user.model");
 
+
 function createUserAccount(req, res, next) {
   const payload = req.body;
   const User = UserModel(payload);
@@ -29,7 +30,7 @@ function createUserAccount(req, res, next) {
         });
       }
     });
-}
+};
 
 function signInUser(req, res, next) {
   const { email, password } = req.body;
@@ -53,10 +54,9 @@ function signInUser(req, res, next) {
       if (response && response._id) {
         if (password === response.password) {
           const token = jwt.sign(
-           // {
-             // roles: response.roles,
-              //uid: response._id,
-            //},
+            {
+                userId:response._id,
+            },
             process.env.APPLICATION_JWT_SECRET,
             {
               expiresIn: "1h",
@@ -81,10 +81,72 @@ function signInUser(req, res, next) {
       }
     })
     .catch((error) => console.log(error));
-}
+};
+// forget password
+function forgetpassword(req, res, next){
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({
+      success: false,
+      error: "Email Id is not valid",
+    });
+  }
+
+  UserModel.findOne({ email: email })
+    .then((response) => {
+      if (response && response._id) {
+        return res.status(200).json({
+          success: true,
+          message: "Password recovery email sent to your inbox.",
+          userId: response._id,
+        });
+      } else {
+        return res.status(401).json({
+          success: false,
+          message: "Account does not exist",
+        });
+      }
+    })
+    .catch((error) => {
+      return res.status(400).json({
+        success: false,
+        error: error,
+      });
+    });
+};
 
 
+// newpassword
+
+function newpassword(req, res, next){
+  const UserData = req.body;
+  const { userId } = req.params;
+
+  UserModel.findByIdAndUpdate(userId, UserData)
+    .then((response) => {
+      if (response && response._id) {
+        return res.status(200).json({
+          success: true,
+          message: "New password Updated Successfully",
+        });
+      } else {
+        return res.status(500).json({
+          success: false,
+          message: "User does not exist",
+        });
+      }
+    })
+    .catch((error) => {
+      return res.status(400).json({
+        success: false,
+        error: error,
+      });
+    });
+};
 module.exports = {
   createUserAccount,
   signInUser,
+  forgetpassword,
+  newpassword,
 };

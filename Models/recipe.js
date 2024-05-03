@@ -21,14 +21,7 @@ const RecipeSchema = mongoose.Schema({
         type:String,
         required:true
     },
-    cookingtime:{
-        type:Number,
-        required:true,
-    },
-    recipeowner:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"user",required:true,
-    },
+  
 });
 
 const Recipe = mongoose.model("recipe", RecipeSchema);
